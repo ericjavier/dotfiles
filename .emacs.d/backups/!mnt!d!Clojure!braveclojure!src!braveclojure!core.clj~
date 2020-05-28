@@ -1,0 +1,99 @@
+(ns braveclojure.core
+  (:gen-class))
+
+;; Chapter 3
+;; Do things: A clojure Crash Course
+
+(defn is-even
+  "Retruns true if a number is even."
+  [number]
+  (if (= (rem number 2) 0) ;; how to use if forms to control flow
+    true
+    false))
+
+(defn hello-eric
+  "Says hello just to Eric."
+  [name]
+  (if (= name "Eric")   ;; note how if can have only one branch
+    (println "Hello, Eric!")))
+
+(defn hello-eric-but-excuse-others
+  "Says hello just it Eric, but excuses to other people."
+  [name]
+  (if (= name "Eric")
+    (println "Hello, Eric!")
+    (do (println "Excuse me sir ...")  ;; note now we can do multiple things
+        (println "I do not think I know you!"))))
+
+(defn notify-eric
+  "Gives Eric a lot of pendants messages."
+  [name]
+  (when (= name "Eric")  ;; note how when is like an if with do and no else
+    (println "Eric message 1")
+    (println "Eric message 2")
+    (println "Eric message 3")
+    (println "Eric message 4")))
+
+;; use nil? to check if a value is nil
+(nil? 1)   ; => false
+(nil? nil) ; => true
+
+
+;; nil is equivalent to false
+;; or returns the first truthy value or the last value (which should be false or nil)
+;; and returns the first falsey value or the last value
+
+(if "Hey" "Hello") ;; => "Hello"
+(if nil "Hello" "Wuey") ;; => "Wuey"
+(or 1 2 3 4) ;; => 1
+(or false false nil 0 1 3 4) ;; => 0
+(or false false nil) ;; => nil
+(or false nil false) ;; => false
+(and 1 2 3 4 false 4 5) ;; => false
+(and 0 0 0 0 nil 0 0) ;; => nill
+(and 0 1 2 3) ;; => 3
+ 
+
+;; use def to bind a name to a value
+(def color "red")
+
+
+;; all Clojure's data structues are immutable
+
+
+;; maps
+{} ;; empty map
+{:first "Eric"
+ :last "Saura"} ;; map with 2 items
+{"plus" +} ;; anything in a map, here string key and function value
+{:id {:name "Eric"
+      :middle "Javier"
+      :age "30"}} ;; can be nested
+
+
+;; hash-map function creates hash maps
+(hash-map :a 1 :b 2 :c 3)
+;; (hash-map :a 1 :b 2 :c) ;; crashes
+
+;; get funtion look up values 
+(get {:a 1 :b 2} :a) ;; => 1
+(get {:a 1 :b 2} :c 3) ;; => 3 note a default value can be provided
+(get {:a 1 :b 2} :c) ;; => nil when no value nil is returned
+
+;; get-in function let you look up values in nested maps
+(get-in {:a 0 :b {:c "Hello"}} [:b :c]) ;; => "Hello"
+
+;; maps can be trated as functions from keys to values
+({:a 1 :b 2} :b) ;; => 2
+({:a 1 :b 2} :c 3) ;; => 3 also can pass defaults
+
+;; keywords can be used as functions to look up for values in underlying data structure
+(:d {:a 1 :d 4}) ;; => 4
+(:d {:a 1 :b 2} "Default!!") ;; => "Default!!"
+
+
+
+(defn -main
+  "I don't do a whole lot ... yet."
+  [& args]
+  (println "Hello, World!"))

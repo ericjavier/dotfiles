@@ -1,0 +1,830 @@
+(ns braveclojure.core
+  (:gen-class))
+
+; Chapter 3
+; Do things: A clojure Crash Course
+
+(defn is-even
+  "Retruns true if a number is even."
+  [number]
+  (if (= (rem number 2) 0) ; how to use if forms to control flow
+    true
+    false))
+
+(defn hello-eric
+  "Says hello just to Eric."
+  [name]
+  (if (= name "Eric")   ; note how if can have only one branch
+    (println "Hello, Eric!")))
+
+(defn hello-eric-but-excuse-others
+  "Says hello just it Eric, but excuses to other people."
+  [name]
+  (if (= name "Eric")
+    (println "Hello, Eric!")
+    (do (println "Excuse me sir ...")  ; note now we can do multiple things
+        (println "I do not think I know you!"))))
+
+(defn notify-eric
+  "Gives Eric a lot of pendants messages."
+  [name]
+  (when (= name "Eric")  ; note how when is like an if with do and no else
+    (println "Eric message 1")
+    (println "Eric message 2")
+    (println "Eric message 3")
+    (println "Eric message 4")))
+
+; use nil? to check if a value is nil
+(nil? 1)   ; => false
+(nil? nil) ; => true
+
+
+; nil is equivalent to false
+; or returns the first truthy value or the last value (which should be false or nil)
+; and returns the first falsey value or the last value
+
+(if "Hey" "Hello") ; => "Hello"
+(if nil "Hello" "Wuey") ; => "Wuey"
+(or 1 2 3 4) ; => 1
+(or false false nil 0 1 3 4) ; => 0
+(or false false nil) ; => nil
+(or false nil false) ; => false
+(and 1 2 3 4 false 4 5) ; => false
+(and 0 0 0 0 nil 0 0) ; => nill
+(and 0 1 2 3) ; => 3
+ 
+
+; use def to bind a name to a value
+(def color "red")
+
+
+; all Clojure's data structues are immutable
+
+
+; maps
+{} ; empty map
+{:first "Eric"
+ :last "Saura"} ; map with 2 items
+{"plus" +} ; anything in a map, here string key and function value
+{:id {:name "Eric"
+      :middle "Javier"
+      :age "30"}} ; can be nested
+
+
+; hash-map function creates hash maps
+(hash-map :a 1 :b 2 :c 3)
+; (hash-map :a 1 :b 2 :c) ;; crashes
+
+; get funtion look up values 
+(get {:a 1 :b 2} :a) ; => 1
+(get {:a 1 :b 2} :c 3) ; => 3 note a default value can be provided
+(get {:a 1 :b 2} :c) ; => nil when no value nil is returned
+
+; get-in function let you look up values in nested maps
+(get-in {:a 0 :b {:c "Hello"}} [:b :c]) ; => "Hello"
+
+; maps can be trated as functions from keys to values
+({:a 1 :b 2} :b) ; => 2
+({:a 1 :b 2} :c 3) ; => 3 also can pass defaults
+
+; keywords can be used as functions to look up for values in underlying data structure
+(:d {:a 1 :d 4}) ; => 4
+(:d {:a 1 :b 2} "Default!!") ; => "Default!!"
+
+
+; vectors
+
+[3 2 1] ; is a vector and vectors are 0-indexed
+["A" 3 :k] ; other vector, you can put whatever into a vector
+
+; vector function creates vectors
+(vector 3 2 1 0)
+
+; get funtion to look up values also work on vectors
+(get [3 2 1] 0) ; => 3
+
+; conj function add items to a vector
+(conj [1 2 3] 4)
+
+
+
+; lists (like linked-lists)
+
+'(1 2 3 4 5 6) ; is a list, sequential but different than vector, can't look up with get
+
+; use list function to create lists
+(list 1 2 "3" :4)
+
+; nth to find the nth item
+(nth '(:a :b :c) 0) ; => :a
+(nth '(:a :b :c) 2) ; => :c
+; (nth '(:a :b) 4) ; crashes
+
+; conj when used with list add in the front
+(conj '(1 2 3) 4) ; => (4 1 2 3)
+
+
+; sets (unique values)
+
+#{"hello" 20 :key} ; sets
+
+; use hash-set to create hash sets from items
+(hash-set 1 1 2 2) ; => #{1 2}
+
+; conj inserts into sets
+(conj #{1 2} 2) ; => #{1 2}
+
+; use set funtion to create from other collection
+(set [3 3 3 4 4 4]) ;; => #{3 4}
+
+; use contains? to check membership
+(contains? #{:a :b} :a) ; => true
+(contains? #{:a :b} :c) ; => false
+(contains? #{nil} nil) ; => true
+
+; you can also use get and keyword as functions with sets
+
+
+
+; calling functions
+; with clojure we always use the same syntax: ( operator operands )
+; operator can be a function or a function expression [can also be special forms or macros]
+; special forms do not necessarily evaluate all operands (for example: (if exp then else))
+; special forms can not be passed as arguments to functions
+; macros are similar to special forms but enough of that for the moment
+; with functions args are evaluated recursively at the call
+
+(+ 1 2 3 4 5) ; function as operator
+((or + -) 1 2 3 4 5) ; function expression as operator
+
+; functions can take any expressions as arguments
+(inc 1.1) ; => 2.1 just increment
+(map inc [1 2 3 4 5]) ; passing functions as arguments
+
+
+; defining functions
+; function definitions have 5 main parts
+; 1 - defn
+; 2 - function name
+; 3 - docstring describing the function (optional)
+; 4 - arguments listed in brackets
+; 5 - body
+
+(defn greetings
+  "Greet someone"
+  [name]
+  (println (str "Hello" name)))
+
+;; doc returns the docstring of a function
+(doc greetings) ; => "Greet someone"
+
+; arguments - arity
+; functions can have zero or more arguments of any type
+(defn no-arg [] (println "no arg"))
+(defn one-arg [x] (println "one arg"))
+(defn two-arg [x y] (println "two arg"))
+
+
+
+; functions can be overloaded on arity
+(defn arity-overloaded
+  ([] (println "no arg"))
+  ([x] (println "1 arg"))
+  ([x y] (println "2 arg")))
+
+
+; function also can have a variable arity
+; to do that a rest argument (putting an ampersand before arg) must be used
+; it is like saying put the rest of arguments on this list
+(defn inc-all
+  [& items]
+  (map inc items))
+
+
+
+; destructuring
+; mechanism to bind names to values within a collection
+(defn vector-first
+  [[first-item]]
+  first-item)
+
+(defn print-first-two
+  [[first-item second-item & rest]]
+  (do (println first-item)
+      (println second-item)))
+
+; actually you can call above function with others collection too
+(print-first-two '(1 2 3 4 5)) ; => 1 2 nil
+(print-first-two #{:a :b}) ; => :b :a nil
+(print-first-two {:a 34 :b 23}) ; => [:a 34] [:b 23] nil
+
+
+; but you can destructure maps directly
+(defn print-id
+  [{name :name age :age}] ; put values associated to :name & :age into variables name & age
+  (println name)
+  (println age))
+
+(defn print-values
+  [{:keys [v1 v2 v3 v4]}] ; simple syntax to bind to values of keys :v1 :v2 :v3 and :v4
+  (println (str "V1: " v1))
+  (println (str "V2: " v2))
+  (println (str "V3: " v3))
+  (println (str "V4: " v4)))
+
+(defn print-values-and-map
+  [{:keys [a b c d] :as m}] ; retaining access to original map with :as keyword
+  (println a)
+  (println b)
+  (println c)
+  (println d)
+  (println m))
+
+; function body
+; bodies contains forms of any kind and always the last one is returned
+(defn my-func
+  []
+  (+ 1 2 3 4 5)
+  "Nothing matters"
+  (println "Some side-effects")
+  45) ; this function returns 45
+
+
+; anonymous functions
+(fn [x] (println x)) ; is an anonymous function
+((fn [x y] (println x) (println y)) "1" "2") ; => 1 2 nil
+#(print %) ; more compact syntax for anonymous function
+(#(str %1 "and" %2) "good morning" "good night") ; using multiple args
+(#(identity %&) 1 "2" :3) ; using rest args
+
+
+; returning functions
+(defn make-inc
+  [x]
+  #(+ % x))
+
+((make-inc 23) 2) ; => 25
+
+
+; lets hit the hobbit
+
+(def asym-hobbit-body-parts [{:name "head" :size 3}
+                             {:name "left-eye" :size 1}
+                             {:name "left-ear" :size 1}
+                             {:name "mouth" :size 1}
+                             {:name "nose" :size 1}
+                             {:name "neck" :size 2}
+                             {:name "left-shoulder" :size 3}
+                             {:name "left-upper-arm" :size 3}
+                             {:name "chest" :size 10}
+                             {:name "back" :size 10}
+                             {:name "left-forearm" :size 3}
+                             {:name "abdomen" :size 6}
+                             {:name "left-kidney" :size 1}
+                             {:name "left-hand" :size 2}
+                             {:name "left-knee" :size 2}
+                             {:name "left-thigh" :size 4}
+                             {:name "left-lower-leg" :size 3}
+                             {:name "left-achilles" :size 1}
+                             {:name "left-foot" :size 2}])
+
+(defn matching-part
+  [part]
+  {:name (clojure.string/replace (:name part) #"^left-" "right-")
+   :size (:size part)})
+
+(defn symmetrize-body-parts
+  [asym-body-parts]
+  (loop [remaining-asym-parts asym-body-parts
+         final-body-parts []]
+    (if (empty? remaining-asym-parts)
+      final-body-parts
+      (let [[part & remaining] remaining-asym-parts]
+        (recur remaining
+               (into final-body-parts
+                     (set [part (matching-part part)])))))))
+
+; let
+; let binds names to values
+; let introduces a new scope
+(let [x 3] x) ; => 3
+(let [x 3 y 5] (+ x y)) ; => 8
+; you can destructure inside lets
+(let [{:keys [a b c d]} {:a 1 :aa 2 :b 3 :bb 4 :c 5 :d 6}] (+ a b c d))
+
+
+; into function is used to add items from one collection to another
+
+; loop
+; provides a way to do recursion in clojure
+(loop [it 1]   ; bindings just like let
+  (println it) ; actions
+  (if (> it 5)
+    (println "bye")    ; not calling recur just saying bye-bye
+    (recur (inc it)))) ; calling recur to try again with other values
+
+; regular expressions
+; #"left-" is the syntax used to denote regular expressions
+(clojure.string/replace "Hello World!" #"o" "A") ; => "HellA WArld!"
+
+
+
+(defn better-symmetrize-body-parts
+  [asym-body-parts]
+  (reduce (fn [final-body-parts part]
+            (into final-body-parts (set [part (matching-part part)])))
+          []
+          asym-body-parts))
+
+(defn hit
+  [asym-body-parts]
+  (let [sym-parts (better-symmetrize-body-parts asym-body-parts)
+        body-part-size-sum (reduce + (map :size sym-parts))
+        target (rand body-part-size-sum)]
+    (loop [[part & remaining] sym-parts
+           accumulated-size (:size part)]
+      (if (> accumulated-size target)
+        part
+        (recur remaining (+ accumulated-size (:size (first remaining))))))))
+
+
+
+; Chapter 4
+; Core Functions in Depth
+
+; Lets thinks of abstractions as named collections of operations
+; if you can perform all abstraction's operations on an object, then that object is an instance of the abstraction
+
+; seq (sequence) abstraction
+; first, rest, cons
+
+; seq function give a sequence from an object
+(seq "Hello") ; => (\H \e \l \l \o)
+(seq #{1 2}) ; => (1 2)
+
+; map
+(map inc [1 2 3 4]) ; => (2 3 4 5)
+(map + [1 2] [2 1] [100 10]) ; => (103 13) yes you can use multiple collections
+(map #(reduce % [1 2 3 4 5]) [+ *]) ; => (15 120) can use map in very interesting ways
+(map :name [{:name "Eric" :age 30} {:name "Javier" :age 31}]) ; nice use maps with keywords
+
+
+
+; reduce
+(reduce + [1 2 3 4 5]) ; => 15
+(reduce (fn [new-map [key val]]           ; func arguments: the new map and a key value pair
+          (assoc new-map key (inc val)))  ; inserts in new map the key and incremented value
+        {}                                ; empty map as seed
+        {:max 30 :min 10})                ; arg that will be taken as a seq of key value pairs
+; => {:max 31 :min 11}
+
+; assoc get maps with key values inside
+(assoc {:a 1} :b 2) ; => {:a 1 :b 2}
+(assoc {:a 1} :b 2 :c 3) ; => {:a 1 :b 2 :c 3}
+
+; take
+(take 3 [1 2 3 4 5 6]) ; => (1 2 3)
+
+; drop
+(drop 3 [1 2 3 4 5 6]) ; => (4 5 6)
+
+; take-while
+(take-while #(< % 3) [1 2 3 4 5 6]) ; => (1 2)
+
+; drop-while
+(drop-while #(< % 3) [1 2 3 4 5 6]) ; => (3 4 5 6)
+
+; filter
+(filter even? [1 2 3 4 5 6]) ; => (2 4 6)
+
+; some (returns first truthy value)
+(some even? [1 3 5 7]) ; => nil
+(some even? [1 2 3 4]) ; => true ; because even? returns true
+(some #(if (even? %) % false) [1 2 3 4]) ; => 2 ; because funtions returns the number
+
+; sort
+(sort [3 1 2 4]) ; => (1 2 3 4)
+
+; sort-by
+(sort-by count ["aaa" "c" "bb"]) ; => ("c" "bb" "aaa")
+
+; concat
+(concat [1 2] [3 4]) ; => (1 2 3 4)
+(concat [1 2] {:a 10}) ; => (1 2 [:a 10])
+
+; it is important to not that all clojure seq functions returns lazy seqs
+
+
+; range
+(range 0 10) ; => (0 1 2 3 4 5 6 7 8 9)
+
+; repeat (infinite)
+(repeat 0) ; => (0 0 0 0 0 ...
+
+; repeatedly (infinite)
+(repeatedly #(rand-int 20)) ; => (6 12 18 1 4 1 18 15 12 17 ...
+
+
+; TODO:
+; lazy-seq
+; realized?
+
+
+
+; collection abstraction
+
+; empty?
+(empty? []) ; => true
+(empty? ["a" "b"]) ; => false
+
+; conj
+; takes a collection and an items and adds that element items to the collection
+(conj [] 1) ; => [1]
+(conj [1 2] 3 4 5) ; => [1 2 3 4 5]
+(conj '() 1 2 3) ; => (3 2 1)
+
+; into
+; takes 2to collections adds second's items to first using conj
+(into [] [1 2 3]) ; => [1 2 3]
+(into '() [1 2 3]) ; => (3 2 1)
+(into #{} (map identity [1 2 3])) ; => #{1 2 3}
+
+; into => conj
+(defn conj-in-terms-of-into
+  [col & items] ; put all other args in vector items
+  (into col items))
+
+; conj => into
+(defn into-in-terms-of-conj
+  [to-col from-col]
+  (apply conj to-col from-col))
+
+; functions
+
+; apply
+; used to apply a function to a collection of args
+; (apply f a b c d [w x y z]) = (f a b c d w x y z)
+; note last args is always sequenceable
+(apply max [1 2 3 4]) ; => 4 ; note how (max [1 2 3 4]) => [1 2 3 4]
+(apply max 10 '(1 2 3 4)) ; => 10
+
+
+; partial
+; used to partially apply functions (curry)
+((partial + 1 2 3 4 5) 2) ; => 20
+
+
+(def f0 (partial apply max 10 9 8))
+(def f1 (partial f0 100))
+
+(f0 [1 2 3 4]) ; => 10
+(f0 [11 12 13 14]) ; => 14
+(f1 [1 2 3 4]) ; => 100
+(f1 [11 12 13 14]) ; => 100
+
+; implementing partial
+(defn my-partial
+  [f & initial-args]
+  (fn [& additional-args]
+    (apply f (into initial-args additional-args))))
+
+
+
+; complement true => false & false => true
+((complement even?) 2) ; => false
+
+
+
+; Vampire data analysis
+(def filename "suspects.csv")
+(slurp filename) ; read the content of filename and return it as a string
+
+(def vamp-keys [:name :glitter-index])
+
+(defn str->int
+  [str]
+  (Integer. str)) ;; (Integer. "234") => 234
+
+(def conversions {:name identity
+                  :glitter-index str->int})
+
+(defn convert
+  "Given a vamp-key and a value convert with the right conversion"
+  [vamp-key value]
+  ((get conversions vamp-key) value))
+
+(defn parse
+  "CSV to row and columns"
+  [s]
+  (map #(clojure.string/split % #",") (clojure.string/split s #"\n")))
+
+(defn mapify
+  "Put the data in a map like format"
+  [rows]
+  (map (fn [row]
+         (reduce (fn [m [vamp-key value]]
+                   (assoc m vamp-key (convert vamp-key value))) ; converting accordingly
+                 {} ; empty seed
+                 (map vector vamp-keys row))) ; map f [a b c] [x y z] = [f(a x) f(b y) f(c z)]
+       rows))
+
+(defn glitter-filter
+  [minimum-glitter records]
+  (filter #(>= (:glitter-index %) minimum-glitter) records))
+
+(glitter-filter 3 (mapify (parse (slurp filename))))
+
+
+
+
+; Chapter 5
+; Functional Programming
+
+; pure functions: refrencial transparency and no side effects
+
+; recursion
+(defn my-sum
+  ([vals] (my-sum vals 0))
+  ([vals n]
+   (if (empty? vals)
+     n
+     (my-sum (rest vals) (+ (first vals) n)))))
+
+; NOTE: clojure does not provide tail call optimization ??
+
+(defn my-sum-with-recur
+  ([vals] (my-sum-with-recur vals 0))
+  ([vals n]
+   (if (empty? vals)
+     n
+     (recur (rest vals) (+ (first vals) n)))))
+
+
+; instead of having mutating attributes clojure uses function composition
+(require '[clojure.string :as s]) ; to access the string function library
+(defn clean
+  [text]
+  (s/replace (s/trim text) #"lol" "LOL"))
+
+
+; comp (compose funtions)
+; comp f1 f2 f3 ... fn = g : g(x1 x2 ... xn) = f1(f2(f3( ... fn(x1 x2 ... xn) ... )))  
+((comp inc *) 2 3) ; => 7
+
+(defn my-comp
+  [& fs]
+  (fn [& args]
+    (first 
+     (reduce (fn [current-args f]
+               (conj [] (apply f current-args)))
+             args
+             (reverse fs)))))
+
+
+
+; memoization
+(defn sleepy-hello
+  [n]
+  (Thread/sleep 2000)
+  (str "Hello " n))
+
+(def memoized-hello (memoize sleepy-hello))
+
+
+
+
+
+
+; Chapter 6
+; Organizing your project
+
+; namespaces (we can thinks of namespaces as maps from symbols to VALUES?)
+*ns* ; refers to current namespace
+
+(ns-name *ns*) ; gets namespace's name
+
+(ns-interns *ns*) ; gets namespace's interned vars
+
+(ns-map *ns*) ; gets all mappings for the namespaces
+
+; ' (quotes) used to tell clojure to not eval
+inc ; => #function[clojure.core/inc]
+'inc ; => inc ; just a symbol
+
+(map inc [1 2]) ; => (2 3)
+'(map inc [1 2]) ; => (map inc [1 2]) ; just a list with 2 symbols and a vector
+
+; def
+; creates vars
+; use it to update de current namespaces map 
+(def days ["Monday" "Friday"]) ; => #'braveclojure.core/days ; reader form of a var
+
+
+; you can use get to look inside namespaces
+(get (ns-interns *ns*) 'days)
+
+; deref (check what vars are referencing)
+(deref #'braveclojure.core/days) ; => ["Monday" "Friday"]
+
+
+; note how def actually changes vars
+(def A "Hey")
+A ; => "Hey"
+(def A "Hello")
+A ; => "Hello"
+
+; creating namespaces
+
+; create-ns (takes a symbol, creates a namespace with that name and returns it)
+(create-ns 'data.lib)
+
+; in-ns (takes a symbol, creates a namespace with that name and switches contest to it
+; (in-ns 'data.lib)
+
+
+; refer (used to refer symbols from other namespaces)
+; can be customized with :exclude :only :rename
+
+; *> (in-ns 'A)
+; A> (def hello "Hello from A")
+; A> hello
+; => "Hello from A"
+; A> (in-ns 'B)
+; B> hello
+; => Error symbol hello is not available
+; B> (clojure.core/refer 'A)
+; B> hello 
+; => "Hello from A"
+
+; customization to be like:
+; (refer 'A :only ['hello])
+
+
+; alias (create namespace alias)
+; (alias 'data 'data.lib)
+
+
+; namespaces files mappings
+; - src is always the root of the code
+; - dashes (-) in ns corresponds to underscores (_) on the fs: data-reports <=> data_reports
+; - dots (.) encode directories:  communications.protocols <=> communications/protocols.clj
+
+
+; defn- (to create functions that are private inside a namespace)
+(defn- private-func
+  []
+  "I am private")
+
+; ns (a macro to incorporate in-ns, refer, alias, require, use)
+; ns refers clojure.core by default
+
+; :refer-clojure to control what gets referred from clojure.core
+; (ns name.core
+;  (:refer-clojure :exclude [println]))
+
+
+
+; :require
+; :use
+; :import
+; :load
+; :gen-class
+
+; TODO: vars
+
+
+
+
+
+; Chapter 7
+; Clojure Alchemy: Reading, Evaluation, and Macros
+
+; Macros allow you to transform arbitrary expressions into valid ones
+; So you can extend the language to fit your needs
+
+(defmacro backwards
+  [form]
+  (reverse form))
+
+(backwards (" backwards" " am" "I" str)) ; => "I am backwards"
+
+; eval
+; eval takes a list of items and evaluate it as a clojure expresion
+(eval (list + 1 2 3 4 5)) ; => 15
+
+; The Reader (converts strings into Clojure data structures)
+
+; the textual representation of data structures is called a reader form
+
+; read-string (takes a reader form and produces Clojure data structures)
+(read-string "(+ 1 2)") ; => (+ 1 2)
+(list? (read-string "(+ 1 2)")) ; => true
+(eval (read-string "(+ 1 2)")) ; => 3
+(read-string "[1 2]") ; => [1 2]
+(read-string "{:k 34}") ; => {:k 34}
+; ...
+
+
+; Reader Macros
+; Reader Macros != Macros
+; Allow to represent data structues in more compact ways
+; Take abbreviated reader from and expand it into a full form
+; Are designated by macro characters: ' (single quote), #, @, ...
+(read-string "#(+ 1 %)") ; => (fn* [p1__7711#] (+ 1 p1__7711#))
+
+(read-string "; ignore!\n(+ 1 2)") ; => (+ 1 2) char ; make the reader to ignore text till \n
+
+; The Evaluator (process Clojure data structues to get a result)
+; To eval a symbols, evaluator looks up what the symbol refers to
+; To eval a list, find first element and calls function, macro or special form
+; Any other values (string, numbres, ...) eval to themselves
+
+
+; If not a list or symbol always eval to itself
+true ; => true
+false ; => false
+{} ; => {}
+:k ; => :k
+{:k 10} ; => {:k 10}
+[1 2] ; [1 2]
+
+; Empty list eval to itself too
+() ; => ()
+
+; Symbols
+; symbols are names to refer to functions, macros, data, ... anything you can use
+; symbols are resolved going to the bindinds andby looking up the symbol entry in a ns mapping
+; at the end we get a value or a special form
+
+; Lists (non empty)
+; eval as a call to the first element in the list
+; if 1st elem. is a function all operands are evaluated and the results passed as function args
+; if 1st elem. is a special form (if quote def let loop fn do recur) have a special way
+; if 1st elem. is a macro:
+
+; Macros
+; macros allow to manipulate lists before Clojure evaluates them
+; macros are executed/expanded between the reader and the evaluator
+; macros allow syntactic abstraction
+
+(defmacro ignore-last
+  [call]
+  (butlast call))
+
+(ignore-last (+ 1 2 3)) ; => 3
+(ignore-last (+ 1 2 (println "Ooops"))) ; => 3
+
+; macroexpand (to expand macros)
+(macroexpand '(ignore-last (+ 1 2 3))) ; => (+ 1 2)
+
+(defmacro infix
+  [infixed]
+  (list (second infixed)
+        (first infixed)
+        (last infixed)))
+
+(infix (1 + 2)) ; => 3
+
+; -> (threading/stabby macro)
+; lets you pipeline funtion composition to read more easily
+
+(defn read-resource
+  [path]
+  (read-string (slurp (clojure.java.io/resource path)))) ; more easy to read using ->
+
+(defn read-resource
+  [path]
+  (-> path
+      clojure.java.io/resource
+      slurp
+      read-string)) ; we start with path, then resource, then slurp, then read-string
+
+
+; Chapter 8 Writing Macros
+; writing macros is all about building a list for Clojure to evaluate
+
+(defmacro infix-2
+  [[x op y :as d]] ; note the use of arg destructuring
+  (list op x y))
+
+; macros can have multiple-arity and be recursive, just like function
+; checkout code for and
+
+; writing macros we will need to distinguish bw symbols and values a lot
+; use ' to turn off Clojure eval and refer to symbols
+(defmacro r-print
+  [expr]
+  (list 'let ['result expr]
+        (list 'println 'result)
+        'result))
+
+
+
+
+
+
+(defn -main
+  "I don't do a whole lot ... yet."
+  [& args]
+  (println "Hello, World!"))
+  

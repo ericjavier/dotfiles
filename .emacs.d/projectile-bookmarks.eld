@@ -1,0 +1,1 @@
+("/mnt/d/clojure/braveclojure/" "/mnt/d/demo/" "/mnt/d/clojure/the-divine-cheese-code/" "/mnt/c/users/ericj/Exercism/clojure/reverse-string/" "/mnt/d/Clojure/braveclojure/" "/mnt/c/users/ericj/Exercism/clojure/two-fer/" "/mnt/c/users/ericj/Exercism/clojure/hello-world/" "~/.emacs.d/")
